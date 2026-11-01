@@ -77,6 +77,9 @@ body{display:flex;flex-direction:column;min-height:100vh}
 .save-btn{background:var(--accent-dim);border:1px solid var(--accent);color:var(--accent-bright);border-radius:8px;padding:7px 14px;font-size:13px;font-family:inherit;font-weight:600;cursor:pointer;transition:all .2s;flex-shrink:0}
 .save-btn:active{transform:scale(0.95)}
 .save-btn.saved{background:rgba(201,162,39,.15);border-color:var(--gold);color:var(--gold)}
+.done-btn{background:var(--accent-dim);border:1px solid var(--accent);color:var(--accent-bright);border-radius:8px;padding:7px 18px;font-size:13px;font-family:inherit;font-weight:600;cursor:pointer;transition:all .2s}
+.done-btn:active{transform:scale(0.95)}
+.done-btn.done{background:rgba(95,174,104,.15);border-color:var(--green);color:var(--green)}
 .last-log{font-size:12px;color:var(--text-dim);min-height:16px;display:flex;align-items:center;gap:4px}
 .trend-up{color:var(--green)}
 .trend-down{color:var(--red)}
@@ -308,7 +311,7 @@ const EXERCISES = {
   crunch: {
     name: 'כפיפות בטן',
     en: 'Crunches',
-    sets: 3, reps: '20–25', rest: 45,
+    sets: 3, reps: '20–25', rest: 45, noWeight: true,
     illus: `<div class="ex-frames"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Crunches/0.jpg" alt="" class="frame0"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Crunches/1.jpg" alt="" class="frame1"></div>`
   },
   incline_press: {
@@ -354,15 +357,15 @@ const EXERCISES = {
     illus: `<div class="ex-frames"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Alternate_Incline_Dumbbell_Curl/0.jpg" alt="" class="frame0"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Alternate_Incline_Dumbbell_Curl/1.jpg" alt="" class="frame1"></div>`
   },
   dead_bug: {
-    name: 'מטפסי הר',
-    en: 'Mountain Climbers',
-    sets: 3, reps: '20 חזרות', rest: 60,
-    illus: `<div class="ex-frames"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Mountain_Climbers/0.jpg" alt="" class="frame0"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Mountain_Climbers/1.jpg" alt="" class="frame1"></div>`
+    name: 'הרמת רגליים שוכב',
+    en: 'Lying Leg Raise',
+    sets: 3, reps: '15–20', rest: 60, noWeight: true,
+    illus: `<div class="ex-frames"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Flat_Bench_Lying_Leg_Raise/0.jpg" alt="" class="frame0"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Flat_Bench_Lying_Leg_Raise/1.jpg" alt="" class="frame1"></div>`
   },
   plank: {
     name: 'פלאנק',
     en: 'Plank',
-    sets: 3, reps: '30–45 שניות', rest: 60,
+    sets: 3, reps: '30–45 שניות', rest: 60, noWeight: true,
     illus: `<div class="ex-frames"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Plank/0.jpg" alt="" class="frame0"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Plank/1.jpg" alt="" class="frame1"></div>`
   }
 };
@@ -464,11 +467,25 @@ function renderCard(id) {
   if (savedToday) card.classList.add('all-done');
   else card.classList.remove('all-done');
 
-  const lastLog = trendHTML(id);
   const lastW = getLastWeight(id);
   const weightVal = lastW ? lastW.weight : '';
 
-  // don't show rest button inside superset cards (superset has shared rest)
+  let actionRow;
+  if (ex.noWeight) {
+    const doneToday = savedToday;
+    actionRow = `<div class="weight-row">
+      <button class="done-btn${doneToday ? ' done' : ''}" id="save-btn-${id}" onclick="markDone('${id}')">${doneToday ? '✓ בוצע' : 'סיימתי'}</button>
+    </div>`;
+  } else {
+    const lastLog = trendHTML(id);
+    actionRow = `<div class="weight-row">
+      <input type="number" class="weight-input" id="weight-${id}" value="${weightVal}" placeholder="ק&quot;ג" min="0" max="999" step="0.5">
+      <span class="weight-unit">ק"ג</span>
+      <button class="save-btn" id="save-btn-${id}" onclick="saveWeight('${id}')">שמור</button>
+    </div>
+    <div class="last-log" id="last-log-${id}">${lastLog}</div>`;
+  }
+
   card.innerHTML = `
     <div class="ex-inner">
       <div class="ex-illus">${ex.illus}</div>
@@ -480,12 +497,7 @@ function renderCard(id) {
           <span class="ex-meta-dot"></span>
           <span>${ex.rest} שניות מנוחה</span>
         </div>
-        <div class="weight-row">
-          <input type="number" class="weight-input" id="weight-${id}" value="${weightVal}" placeholder="ק&quot;ג" min="0" max="999" step="0.5">
-          <span class="weight-unit">ק"ג</span>
-          <button class="save-btn" id="save-btn-${id}" onclick="saveWeight('${id}')">שמור</button>
-        </div>
-        <div class="last-log" id="last-log-${id}">${lastLog}</div>
+        ${actionRow}
       </div>
     </div>`;
 }
@@ -512,6 +524,22 @@ function saveWeight(id) {
   setTimeout(() => { btn.classList.remove('saved'); btn.textContent = 'שמור'; }, 2000);
   document.getElementById(`last-log-${id}`).innerHTML = trendHTML(id);
   showToast(`${EXERCISES[id].name}: ${val} ק"ג נשמר`);
+}
+
+// ─── MARK DONE (no-weight exercises) ─────────────────────────────────────────
+function markDone(id) {
+  const today = todayKey();
+  if (!weightsState[id]) weightsState[id] = [];
+  const alreadyDone = weightsState[id].some(l => l.date === today);
+  if (alreadyDone) return;
+  weightsState[id].push({ date: today, weight: 0 });
+  storageSet('ss-weights', JSON.stringify(weightsState));
+  const btn = document.getElementById(`save-btn-${id}`);
+  btn.classList.add('done');
+  btn.textContent = '✓ בוצע';
+  document.getElementById(`card-${id}`).classList.add('all-done');
+  updateProgress();
+  showToast(`${EXERCISES[id].name}: בוצע!`);
 }
 
 // ─── FINISH WORKOUT ───────────────────────────────────────────────────────────
