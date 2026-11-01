@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Swim Strength</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Swim Strength">
+<meta name="theme-color" content="#1A7A8F">
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#15171B;
+  --surface:#1C1F24;
+  --surface-2:#22262C;
+  --line:#2B2F36;
+  --text:#EDEAE3;
+  --text-dim:#93979F;
+  --accent:#1A7A8F;
+  --accent-bright:#52C5DC;
+  --accent-dim:#1E3840;
+  --gold:#C9A227;
+  --green:#5FAE68;
+  --red:#C05B5B;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Rubik',system-ui,-apple-system,sans-serif;overflow-x:hidden}
+body{display:flex;flex-direction:column;min-height:100vh}
+
+/* HEADER */
+#app-header{background:var(--surface);border-bottom:1px solid var(--line);padding:16px 16px 12px;position:sticky;top:0;z-index:50;flex-shrink:0}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.header-title{font-size:20px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px}
+.header-date{font-size:13px;color:var(--text-dim);font-weight:400}
+.progress-wrap{background:var(--surface-2);border-radius:6px;height:6px;overflow:hidden}
+.progress-bar{height:100%;background:var(--accent);border-radius:6px;transition:width .4s ease}
+.progress-label{font-size:12px;color:var(--text-dim);margin-top:5px;text-align:center}
+
+/* MAIN */
+#main{flex:1;padding:12px 16px 100px;max-width:520px;margin:0 auto;width:100%}
+
+/* WARMUP BANNER */
+.warmup-banner{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--text-dim);line-height:1.5}
+.warmup-banner strong{color:var(--text);font-weight:700}
+
+/* STATION HEADER */
+.station-header{display:flex;align-items:center;gap:10px;margin:20px 0 10px;padding:0 2px}
+.station-number{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.station-title{font-size:14px;font-weight:700;color:var(--text)}
+.station-sub{font-size:12px;color:var(--text-dim);margin-right:4px}
+
+/* EXERCISE CARD */
+.ex-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px;transition:border-color .2s}
+.ex-card.all-done{border-color:var(--green)}
+.ex-inner{display:flex;gap:12px;align-items:flex-start}
+.ex-illus{width:90px;height:90px;flex-shrink:0;border-radius:12px;overflow:hidden;position:relative;background:var(--surface-2)}
+.ex-frames{position:relative;width:100%;height:100%}
+.ex-frames img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.ex-frames .frame1{animation:frameFlip 2.5s step-start infinite}
+@keyframes frameFlip{0%,49%{opacity:0}50%,100%{opacity:1}}
+.ex-body{flex:1;min-width:0}
+.ex-name{font-size:15px;font-weight:700;color:var(--text);line-height:1.2;margin-bottom:2px}
+.ex-name-en{font-size:11px;color:var(--text-dim);margin-bottom:6px}
+.ex-meta{font-size:12px;color:var(--text-dim);margin-bottom:10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.ex-meta-dot{width:3px;height:3px;border-radius:50%;background:var(--line)}
+
+/* WEIGHT ROW */
+.weight-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.weight-input{width:80px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:7px 10px;color:var(--text);font-size:15px;font-family:inherit;text-align:center;outline:none;transition:border-color .2s}
+.weight-input:focus{border-color:var(--accent)}
+.weight-unit{font-size:12px;color:var(--text-dim)}
+.save-btn{background:var(--accent-dim);border:1px solid var(--accent);color:var(--accent-bright);border-radius:8px;padding:7px 14px;font-size:13px;font-family:inherit;font-weight:600;cursor:pointer;transition:all .2s;flex-shrink:0}
+.save-btn:active{transform:scale(0.95)}
+.save-btn.saved{background:rgba(201,162,39,.15);border-color:var(--gold);color:var(--gold)}
+.last-log{font-size:12px;color:var(--text-dim);min-height:16px;display:flex;align-items:center;gap:4px}
+.trend-up{color:var(--green)}
+.trend-down{color:var(--red)}
+.trend-flat{color:var(--text-dim)}
+
+/* SUPERSET */
+.superset-wrap{margin-bottom:10px;position:relative}
+.superset-label{display:inline-flex;align-items:center;gap:6px;background:var(--accent-dim);border:1px solid var(--accent);border-radius:20px;padding:4px 10px;font-size:12px;font-weight:700;color:var(--accent-bright);margin-bottom:8px}
+.superset-cards{border-right:2px solid var(--accent);padding-right:10px;display:flex;flex-direction:column;gap:8px}
+.superset-connector{display:flex;align-items:center;justify-content:center;padding:4px 0;font-size:12px;color:var(--accent-bright);font-weight:700;letter-spacing:.05em}
+.ex-card.superset{border-right:none;margin-bottom:0}
+.superset-rest{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+
+/* FOOTER */
+#footer{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--line);padding:12px 16px calc(12px + env(safe-area-inset-bottom));display:flex;justify-content:center}
+.finish-btn{background:var(--accent);color:#fff;border:none;border-radius:12px;padding:14px 32px;font-size:16px;font-family:inherit;font-weight:700;cursor:pointer;transition:all .2s;width:100%;max-width:488px}
+.finish-btn:active{transform:scale(0.98)}
+.finish-btn.complete{background:var(--green)}
+
+/* COMPLETION BANNER */
+.completion-banner{display:none;background:rgba(63,147,166,.12);border:1px solid var(--accent);border-radius:14px;padding:18px;text-align:center;margin-bottom:16px}
+.completion-banner.show{display:block}
+.completion-banner .emoji{font-size:40px;margin-bottom:8px}
+.completion-banner h2{font-size:18px;font-weight:800;color:var(--accent-bright);margin-bottom:4px}
+.completion-banner p{font-size:13px;color:var(--text-dim)}
+
+/* TOAST */
+.toast-container{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:var(--surface-2);border:1px solid var(--line);color:var(--text);padding:10px 18px;border-radius:10px;font-size:13px;font-family:inherit;white-space:nowrap;opacity:0;animation:toastIn .25s forwards,toastOut .25s 2.5s forwards}
+@keyframes toastIn{to{opacity:1;transform:translateY(0)}from{opacity:0;transform:translateY(-8px)}}
+@keyframes toastOut{to{opacity:0}}
+
+/* ── SVG exercise animations ── */
+.lp-arm-l{animation:lpArmL 2.5s ease-in-out infinite;transform-origin:50% 50%;transform-box:fill-box}
+.lp-arm-r{animation:lpArmR 2.5s ease-in-out infinite;transform-origin:50% 50%;transform-box:fill-box}
+.lp-lat{animation:lpLat 2.5s ease-in-out infinite}
+@keyframes lpArmL{0%,100%{transform:rotate(-35deg)}50%{transform:rotate(20deg)}}
+@keyframes lpArmR{0%,100%{transform:rotate(35deg)}50%{transform:rotate(-20deg)}}
+@keyframes lpLat{0%,100%{opacity:.3}50%{opacity:.9}}
+
+.sr-arm-l{animation:srAL 2.5s ease-in-out infinite;transform-origin:100% 0%;transform-box:fill-box}
+.sr-arm-r{animation:srAR 2.5s ease-in-out infinite;transform-origin:0% 0%;transform-box:fill-box}
+.sr-back{animation:srBack 2.5s ease-in-out infinite}
+@keyframes srAL{0%,100%{transform:rotate(-30deg)}50%{transform:rotate(20deg)}}
+@keyframes srAR{0%,100%{transform:rotate(30deg)}50%{transform:rotate(-20deg)}}
+@keyframes srBack{0%,100%{opacity:.3}50%{opacity:.9}}
+
+.fp-arm-l{animation:fpAL 2.5s ease-in-out infinite;transform-origin:100% 0%;transform-box:fill-box}
+.fp-arm-r{animation:fpAR 2.5s ease-in-out infinite;transform-origin:0% 0%;transform-box:fill-box}
+.fp-delt{animation:fpDelt 2.5s ease-in-out infinite}
+@keyframes fpAL{0%,100%{transform:rotate(-40deg)}50%{transform:rotate(10deg)}}
+@keyframes fpAR{0%,100%{transform:rotate(40deg)}50%{transform:rotate(-10deg)}}
+@keyframes fpDelt{0%,100%{opacity:.3}50%{opacity:.9}}
+
+.cf-arm-l{animation:cfAL 2.5s ease-in-out infinite;transform-origin:100% 50%;transform-box:fill-box}
+.cf-arm-r{animation:cfAR 2.5s ease-in-out infinite;transform-origin:0% 50%;transform-box:fill-box}
+.cf-pec{animation:cfPec 2.5s ease-in-out infinite}
+@keyframes cfAL{0%,100%{transform:rotate(-40deg)}50%{transform:rotate(10deg)}}
+@keyframes cfAR{0%,100%{transform:rotate(40deg)}50%{transform:rotate(-10deg)}}
+@keyframes cfPec{0%,100%{opacity:.25}50%{opacity:.9}}
+
+.ip-arm-l{animation:ipAL 2.5s ease-in-out infinite;transform-origin:100% 0%;transform-box:fill-box}
+.ip-arm-r{animation:ipAR 2.5s ease-in-out infinite;transform-origin:0% 0%;transform-box:fill-box}
+.ip-chest{animation:ipChest 2.5s ease-in-out infinite}
+@keyframes ipAL{0%,100%{transform:rotate(30deg)}50%{transform:rotate(-20deg)}}
+@keyframes ipAR{0%,100%{transform:rotate(-30deg)}50%{transform:rotate(20deg)}}
+@keyframes ipChest{0%,100%{opacity:.3}50%{opacity:.88}}
+
+.sp-arm-l{animation:spAL 2.5s ease-in-out infinite;transform-origin:100% 100%;transform-box:fill-box}
+.sp-arm-r{animation:spAR 2.5s ease-in-out infinite;transform-origin:0% 100%;transform-box:fill-box}
+.sp-delt{animation:spDelt 2.5s ease-in-out infinite}
+@keyframes spAL{0%,100%{transform:rotate(35deg)}50%{transform:rotate(-10deg)}}
+@keyframes spAR{0%,100%{transform:rotate(-35deg)}50%{transform:rotate(10deg)}}
+@keyframes spDelt{0%,100%{opacity:.35}50%{opacity:.9}}
+
+.lr-arm-l{animation:lrAL 2.5s ease-in-out infinite;transform-origin:100% 0%;transform-box:fill-box}
+.lr-arm-r{animation:lrAR 2.5s ease-in-out infinite;transform-origin:0% 0%;transform-box:fill-box}
+.lr-delt{animation:lrDelt 2.5s ease-in-out infinite}
+@keyframes lrAL{0%,100%{transform:rotate(50deg)}50%{transform:rotate(-5deg)}}
+@keyframes lrAR{0%,100%{transform:rotate(-50deg)}50%{transform:rotate(5deg)}}
+@keyframes lrDelt{0%,100%{opacity:.3}50%{opacity:.9}}
+
+.sc-forearm{animation:scFore 2.5s ease-in-out infinite;transform-origin:0% 100%;transform-box:fill-box}
+.sc-tri{animation:scTri 2.5s ease-in-out infinite}
+@keyframes scFore{0%,100%{transform:rotate(-70deg)}50%{transform:rotate(0deg)}}
+@keyframes scTri{0%,100%{opacity:.9}50%{opacity:.35}}
+
+.hc-forearm{animation:hcFore 2.5s ease-in-out infinite;transform-origin:50% 0%;transform-box:fill-box}
+.hc-bic{animation:hcBic 2.5s ease-in-out infinite}
+@keyframes hcFore{0%,100%{transform:rotate(60deg)}50%{transform:rotate(-10deg)}}
+@keyframes hcBic{0%,100%{opacity:.3}50%{opacity:.9}}
+
+.ot-forearm{animation:otFore 2.5s ease-in-out infinite;transform-origin:50% 100%;transform-box:fill-box}
+.ot-tri{animation:otTri 2.5s ease-in-out infinite}
+@keyframes otFore{0%,100%{transform:rotate(60deg)}50%{transform:rotate(-5deg)}}
+@keyframes otTri{0%,100%{opacity:.35}50%{opacity:.9}}
+
+.ic-forearm{animation:icFore 2.5s ease-in-out infinite;transform-origin:50% 0%;transform-box:fill-box}
+.ic-bic{animation:icBic 2.5s ease-in-out infinite}
+@keyframes icFore{0%,100%{transform:rotate(40deg)}50%{transform:rotate(-30deg)}}
+@keyframes icBic{0%,100%{opacity:.3}50%{opacity:.9}}
+
+.db-arm-l{animation:dbAL 2.5s ease-in-out infinite;transform-origin:100% 0%;transform-box:fill-box}
+.db-leg-r{animation:dbLR 2.5s ease-in-out infinite;transform-origin:0% 0%;transform-box:fill-box}
+.db-core{animation:dbCore 2.5s ease-in-out infinite}
+@keyframes dbAL{0%,100%{transform:rotate(-40deg)}50%{transform:rotate(30deg)}}
+@keyframes dbLR{0%,100%{transform:rotate(40deg)}50%{transform:rotate(-30deg)}}
+@keyframes dbCore{0%,100%{opacity:.4}50%{opacity:.85}}
+
+.pl-body{animation:plBody 3s ease-in-out infinite;transform-origin:50% 50%;transform-box:fill-box}
+.pl-core{animation:plCore 3s ease-in-out infinite}
+@keyframes plBody{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.04)}}
+@keyframes plCore{0%,100%{opacity:.55}50%{opacity:.85}}
+</style>
+</head>
+<body>
+
+<header id="app-header">
+  <div class="header-top">
+    <div class="header-title">💪 Swim Strength</div>
+    <div class="header-date" id="header-date"></div>
+  </div>
+  <div class="progress-wrap"><div class="progress-bar" id="progress-bar" style="width:0%"></div></div>
+  <div class="progress-label" id="progress-label">0 / 13 תרגילים עודכנו היום</div>
+</header>
+
+<main id="main">
+  <div class="completion-banner" id="completion-banner">
+    <div class="emoji">🏊</div>
+    <h2>כל הכבוד! אימון הושלם 💪🏊</h2>
+    <p>עבודה מצוינת — הגוף שלך מכין את עצמו לשחייה הבאה</p>
+  </div>
+
+  <div class="warmup-banner">
+    <strong>🔥 חימום — 5 דקות</strong>
+    <ol style="margin-top:8px;padding-right:18px;display:flex;flex-direction:column;gap:4px">
+      <li>3 דקות הליכה מהירה על ההליכון (או 2 דקות חבל קפיצה)</li>
+      <li>10 סיבובי זרועות קדימה ואחורה</li>
+    </ol>
+  </div>
+
+  <!-- STATION 1 -->
+  <div class="station-header">
+    <div class="station-number">1</div>
+    <div>
+      <div class="station-title">כבלים</div>
+      <span class="station-sub">Cables</span>
+    </div>
+  </div>
+
+  <div id="card-lat_pulldown" class="ex-card" data-id="lat_pulldown" data-max-sets="3" data-rest="90"></div>
+  <div id="card-seated_row" class="ex-card" data-id="seated_row" data-max-sets="3" data-rest="90"></div>
+  <div id="card-face_pull" class="ex-card" data-id="face_pull" data-max-sets="2" data-rest="60"></div>
+
+  <!-- STATION 2 -->
+  <div class="station-header">
+    <div class="station-number">2</div>
+    <div>
+      <div class="station-title">ספסל ומשקולות</div>
+      <span class="station-sub">Bench &amp; Dumbbells</span>
+    </div>
+  </div>
+
+  <div id="card-incline_press" class="ex-card" data-id="incline_press" data-max-sets="3" data-rest="90"></div>
+  <div id="card-shoulder_press" class="ex-card" data-id="shoulder_press" data-max-sets="3" data-rest="90"></div>
+  <div id="card-lateral_raise" class="ex-card" data-id="lateral_raise" data-max-sets="3" data-rest="60"></div>
+
+  <!-- SUPERSET A -->
+  <div class="superset-wrap">
+    <div class="superset-label">⚡ סופר סט A</div>
+    <div class="superset-cards">
+      <div id="card-skull_crusher" class="ex-card superset" data-id="skull_crusher" data-max-sets="3" data-rest="75" data-superset="A"></div>
+      <div class="superset-connector">↕ A1 + A2 ↕</div>
+      <div id="card-hammer_curl" class="ex-card superset" data-id="hammer_curl" data-max-sets="3" data-rest="75" data-superset="A"></div>
+    </div>
+  </div>
+
+  <!-- SUPERSET B -->
+  <div class="superset-wrap">
+    <div class="superset-label">⚡ סופר סט B</div>
+    <div class="superset-cards">
+      <div id="card-overhead_tricep" class="ex-card superset" data-id="overhead_tricep" data-max-sets="3" data-rest="75" data-superset="B"></div>
+      <div class="superset-connector">↕ B1 + B2 ↕</div>
+      <div id="card-incline_curl" class="ex-card superset" data-id="incline_curl" data-max-sets="3" data-rest="75" data-superset="B"></div>
+    </div>
+  </div>
+
+  <!-- STATION 3 -->
+  <div class="station-header">
+    <div class="station-number">3</div>
+    <div>
+      <div class="station-title">מזרן — ליבה</div>
+      <span class="station-sub">Mat / Core</span>
+    </div>
+  </div>
+
+  <div id="card-crunch" class="ex-card" data-id="crunch" data-max-sets="3" data-rest="60"></div>
+  <div id="card-dead_bug" class="ex-card" data-id="dead_bug" data-max-sets="3" data-rest="60"></div>
+  <div id="card-plank" class="ex-card" data-id="plank" data-max-sets="3" data-rest="60"></div>
+</main>
+
+<footer id="footer">
+  <button class="finish-btn" id="finish-btn" onclick="finishWorkout()">סיים אימון</button>
+</footer>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+// ─── DATA ────────────────────────────────────────────────────────────────────
+const EXERCISES = {
+  lat_pulldown: {
+    name: 'שכיבת כבל מלמעלה',
+    en: 'Lat Pulldown',
+    sets: 3, reps: '8–12', rest: 90,
+    illus: `<div class="ex-frames"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Close-Grip_Front_Lat_Pulldown/0.jpg" alt="" class="frame0"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Close-Grip_Front_Lat_Pulldown/1.jpg" alt="" class="frame1"></div>`
+  },
+  seated_row: {
+    name: 'חתירה ישובה בכבל',
+    en: 'Seated Cable Row',
+    sets: 3, reps: '10–12', rest: 90,
+    illus: `<div class="ex-frames"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Elevated_Cable_Rows/0.jpg" alt="" class="frame0"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Elevated_Cable_Rows/1.jpg" alt="" class="frame1"></div>`
+  },
+  face_pull: {
+    name: 'משיכת פנים בכבל',
+    en: 'Face Pull',
+    sets: 2, reps: '12–15', rest: 60,
+    illus: `<div class="ex-frames"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Face_Pull/0.jpg" alt="" class="frame0"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Face_Pull/1.jpg" alt="" class="frame1"></div>`
+  },
+  crunch: {
+    name: 'כפיפות בטן',
+    en: 'Crunches',
+    sets: 3, reps: '20–25', rest: 45,
+    illus: `<div class="ex-frames"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Crunches/0.jpg" alt="" class="frame0"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Crunches/1.jpg" alt="" class="frame1"></div>`
+  },
+  incline_press: {
+    name: 'לחיצת דמבל בשיפוע',
+    en: 'Incline Dumbbell Press',
+    sets: 3, reps: '8–10', rest: 90,
+    illus: `<div class="ex-frames"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Press/0.jpg" alt="" class="frame0"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Press/1.jpg" alt="" class="frame1"></div>`
+  },
+  shoulder_press: {
+    name: 'לחיצת כתפיים ישובה',
+    en: 'Seated Shoulder Press',
+    sets: 3, reps: '8–10', rest: 90,
+    illus: `<div class="ex-frames"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Shoulder_Press/0.jpg" alt="" class="frame0"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Shoulder_Press/1.jpg" alt="" class="frame1"></div>`
+  },
+  lateral_raise: {
+    name: 'הרמה לצדדים עם דמבלים',
+    en: 'Side Lateral Raise',
+    sets: 3, reps: '12–15', rest: 60,
+    illus: `<div class="ex-frames"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Side_Lateral_Raise/0.jpg" alt="" class="frame0"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Side_Lateral_Raise/1.jpg" alt="" class="frame1"></div>`
+  },
+  skull_crusher: {
+    name: 'שוחה על ספסל',
+    en: 'Skull Crusher',
+    sets: 3, reps: '10–12', rest: 75,
+    illus: `<div class="ex-frames"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Band_Skull_Crusher/0.jpg" alt="" class="frame0"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Band_Skull_Crusher/1.jpg" alt="" class="frame1"></div>`
+  },
+  hammer_curl: {
+    name: 'סיבוב פטיש',
+    en: 'Hammer Curl',
+    sets: 3, reps: '10–12', rest: 75,
+    illus: `<div class="ex-frames"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Alternate_Hammer_Curl/0.jpg" alt="" class="frame0"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Alternate_Hammer_Curl/1.jpg" alt="" class="frame1"></div>`
+  },
+  overhead_tricep: {
+    name: 'הרחקת זרוע מעל',
+    en: 'Overhead DB Tricep Extension',
+    sets: 3, reps: '10–12', rest: 75,
+    illus: `<div class="ex-frames"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Rope_Overhead_Triceps_Extension/0.jpg" alt="" class="frame0"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Rope_Overhead_Triceps_Extension/1.jpg" alt="" class="frame1"></div>`
+  },
+  incline_curl: {
+    name: 'כפיפת דמבל בשיפוע',
+    en: 'Incline Dumbbell Curl',
+    sets: 3, reps: '10–12', rest: 75,
+    illus: `<div class="ex-frames"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Alternate_Incline_Dumbbell_Curl/0.jpg" alt="" class="frame0"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Alternate_Incline_Dumbbell_Curl/1.jpg" alt="" class="frame1"></div>`
+  },
+  dead_bug: {
+    name: 'מטפסי הר',
+    en: 'Mountain Climbers',
+    sets: 3, reps: '20 חזרות', rest: 60,
+    illus: `<div class="ex-frames"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Mountain_Climbers/0.jpg" alt="" class="frame0"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Mountain_Climbers/1.jpg" alt="" class="frame1"></div>`
+  },
+  plank: {
+    name: 'פלאנק',
+    en: 'Plank',
+    sets: 3, reps: '30–45 שניות', rest: 60,
+    illus: `<div class="ex-frames"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Plank/0.jpg" alt="" class="frame0"><img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Plank/1.jpg" alt="" class="frame1"></div>`
+  }
+};
+
+// ─── STORAGE ──────────────────────────────────────────────────────────────────
+function storageGet(key) {
+  return window.storage ? window.storage.getItem(key) : localStorage.getItem(key);
+}
+function storageSet(key, val) {
+  try {
+    window.storage ? window.storage.setItem(key, val) : localStorage.setItem(key, val);
+  } catch(e) { showToast('שגיאה בשמירה'); }
+}
+
+// ─── TOAST ───────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+// ─── DATE HELPERS ─────────────────────────────────────────────────────────────
+function todayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function hebrewDate() {
+  return new Date().toLocaleDateString('he-IL', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+}
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let weightsState = {}; // exerciseId -> [{date, weight}]
+
+function loadState() {
+  const rawW = storageGet('ss-weights');
+  weightsState = rawW ? JSON.parse(rawW) : {};
+}
+
+// ─── PROGRESS ────────────────────────────────────────────────────────────────
+function updateProgress() {
+  const total = Object.keys(EXERCISES).length;
+  const today = todayKey();
+  const done = Object.keys(EXERCISES).filter(id => {
+    const logs = weightsState[id];
+    return logs && logs.some(l => l.date === today);
+  }).length;
+  const pct = total ? Math.round(done / total * 100) : 0;
+  document.getElementById('progress-bar').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = `${done} / ${total} תרגילים עודכנו היום`;
+
+  // completion banner
+  const banner = document.getElementById('completion-banner');
+  const finBtn = document.getElementById('finish-btn');
+  if (done >= total) {
+    banner.classList.add('show');
+    finBtn.classList.add('complete');
+    finBtn.textContent = '✓ אימון הושלם!';
+  } else {
+    banner.classList.remove('show');
+    finBtn.classList.remove('complete');
+    finBtn.textContent = 'סיים אימון';
+  }
+}
+
+// ─── WEIGHT HELPERS ───────────────────────────────────────────────────────────
+function getLastWeight(id) {
+  const history = weightsState[id] || [];
+  return history.length ? history[history.length - 1] : null;
+}
+function getPrevWeight(id) {
+  const history = weightsState[id] || [];
+  return history.length >= 2 ? history[history.length - 2] : null;
+}
+function trendHTML(id) {
+  const last = getLastWeight(id);
+  const prev = getPrevWeight(id);
+  if (!last) return '';
+  let trend = '';
+  if (prev) {
+    if (last.weight > prev.weight) trend = '<span class="trend-up">↑</span>';
+    else if (last.weight < prev.weight) trend = '<span class="trend-down">↓</span>';
+    else trend = '<span class="trend-flat">→</span>';
+  }
+  const dateStr = new Date(last.date).toLocaleDateString('he-IL', {day:'numeric', month:'numeric'});
+  return `${trend} ${last.weight} ק"ג · ${dateStr}`;
+}
+
+// ─── RENDER CARD ─────────────────────────────────────────────────────────────
+function renderCard(id) {
+  const ex = EXERCISES[id];
+  const card = document.getElementById(`card-${id}`);
+  if (!card || !ex) return;
+
+  const today = todayKey();
+  const savedToday = (weightsState[id] || []).some(l => l.date === today);
+  if (savedToday) card.classList.add('all-done');
+  else card.classList.remove('all-done');
+
+  const lastLog = trendHTML(id);
+  const lastW = getLastWeight(id);
+  const weightVal = lastW ? lastW.weight : '';
+
+  // don't show rest button inside superset cards (superset has shared rest)
+  card.innerHTML = `
+    <div class="ex-inner">
+      <div class="ex-illus">${ex.illus}</div>
+      <div class="ex-body">
+        <div class="ex-name">${ex.name}</div>
+        <div class="ex-name-en">${ex.en}</div>
+        <div class="ex-meta">
+          <span>${ex.sets}×${ex.reps}</span>
+          <span class="ex-meta-dot"></span>
+          <span>${ex.rest} שניות מנוחה</span>
+        </div>
+        <div class="weight-row">
+          <input type="number" class="weight-input" id="weight-${id}" value="${weightVal}" placeholder="ק&quot;ג" min="0" max="999" step="0.5">
+          <span class="weight-unit">ק"ג</span>
+          <button class="save-btn" id="save-btn-${id}" onclick="saveWeight('${id}')">שמור</button>
+        </div>
+        <div class="last-log" id="last-log-${id}">${lastLog}</div>
+      </div>
+    </div>`;
+}
+
+function renderAll() {
+  Object.keys(EXERCISES).forEach(id => renderCard(id));
+  updateProgress();
+}
+
+// ─── WEIGHT SAVE ─────────────────────────────────────────────────────────────
+function saveWeight(id) {
+  const input = document.getElementById(`weight-${id}`);
+  const val = parseFloat(input.value);
+  if (isNaN(val) || val <= 0) { showToast('יש להזין משקל תקין'); return; }
+
+  if (!weightsState[id]) weightsState[id] = [];
+  weightsState[id].push({ date: new Date().toISOString().split('T')[0], weight: val });
+  if (weightsState[id].length > 10) weightsState[id].shift();
+  storageSet('ss-weights', JSON.stringify(weightsState));
+
+  const btn = document.getElementById(`save-btn-${id}`);
+  btn.classList.add('saved');
+  btn.textContent = '✓ נשמר';
+  setTimeout(() => { btn.classList.remove('saved'); btn.textContent = 'שמור'; }, 2000);
+  document.getElementById(`last-log-${id}`).innerHTML = trendHTML(id);
+  showToast(`${EXERCISES[id].name}: ${val} ק"ג נשמר`);
+}
+
+// ─── FINISH WORKOUT ───────────────────────────────────────────────────────────
+function finishWorkout() {
+  showToast('כל הכבוד! אימון הושלם 🏊');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('header-date').textContent = hebrewDate();
+  loadState();
+  renderAll();
+  if (location.protocol !== 'file:') {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+});
+</script>
+</body>
+</html>
